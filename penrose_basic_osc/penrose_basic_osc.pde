@@ -13,7 +13,7 @@ import controlP5.*;
 
 //gui
 ControlP5 cp5;
-
+int OPACITY = 100;
 //data structures
 ArrayList<Triangle>  triangles;
 ArrayList sliders = new ArrayList();
@@ -25,6 +25,7 @@ float omega = 5*2*PI;
 float param_t = GOLDEN_RATIO;
 float vSize = 75;
 int recursionLevel = 6;
+PImage currImg, oImg;
 
 //booleans
 boolean showGUI = true;
@@ -32,8 +33,7 @@ boolean drawTiling = false;
 boolean drawVertices =true;
 
 void setup() {
-  size(1200, 800); 
-  background(0);
+  size(960, 640); 
   smooth();
   //setup gui
   cp5 = new ControlP5(this);
@@ -45,13 +45,15 @@ void setup() {
     width/2.0, 0.0, 0.0, height, width, height
   };
   
+  oImg = loadImage("test.jpg", "jpg");
+  currImg = createImage(oImg.width, oImg.height, RGB);
   setupTriangles();
 }
 
 void draw() {
   background(0);
   
-  update();
+  //update();
   
   pushMatrix();
   translate(width/2, height/2);
@@ -67,6 +69,20 @@ void draw() {
     popMatrix();
   }
   popMatrix();
+  
+  
+  currImg.copy(oImg, 0,0,oImg.width,oImg.height, 0,0,width,height);
+  PImage test = get();
+  //currImg.mask(test);
+  pushMatrix();
+  translate(width/2, height/2);
+  scale(1);
+  image(currImg, -currImg.width/2, -currImg.height/2);
+  popMatrix();
+
+  
+  
+  
 }
 
 public void update() {
@@ -200,4 +216,20 @@ float[] shift(float[] vs, float newVal) {
 
   return newVs;
 }
+
+
+PImage getFrame() {
+  PImage img = new PImage(width, height);
+  
+  g.loadPixels();
+  img.loadPixels();
+  
+  img.pixels = g.pixels;
+  
+  img.updatePixels();
+  g.updatePixels();
+  
+  return img;
+}
+
 

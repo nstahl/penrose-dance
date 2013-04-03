@@ -51,7 +51,7 @@ class Triangle {
    
    if(drawVertices) {
    noStroke();
-   fill(255, 10);
+   fill(255, OPACITY);
    for(int i=0; i<vertices.length; i++) {
    ellipse(vertices[i].x,vertices[i].y,vSize,vSize);
    }
