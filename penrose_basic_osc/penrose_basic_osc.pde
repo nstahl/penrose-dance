@@ -10,10 +10,11 @@ import toxi.math.waves.*;
 import toxi.util.*;
 import toxi.math.noise.*;
 import controlP5.*;
+import java.util.*;
 
 //gui
 ControlP5 cp5;
-int OPACITY = 100;
+int OPACITY = 5;
 //data structures
 ArrayList<Triangle>  triangles;
 ArrayList sliders = new ArrayList();
@@ -32,6 +33,8 @@ boolean showGUI = true;
 boolean drawTiling = false;
 boolean drawVertices =true;
 
+HashMap<String, Integer> hashMap;
+
 void setup() {
   size(960, 640); 
   smooth();
@@ -47,19 +50,20 @@ void setup() {
   
   oImg = loadImage("test.jpg", "jpg");
   currImg = createImage(oImg.width, oImg.height, RGB);
+  hashMap = new HashMap();
   setupTriangles();
 }
 
 void draw() {
   background(0);
   
-  //update();
+  update();
   
   pushMatrix();
   translate(width/2, height/2);
   scale(.275);
 
-  for (int j = 0; j<10; j++) {
+  for (int j = 0; j<40; j++) {
     pushMatrix();
     scale(1, pow(-1, (j % 2)));
     rotate(radians(36*(j+j%2)));
@@ -73,7 +77,7 @@ void draw() {
   
   currImg.copy(oImg, 0,0,oImg.width,oImg.height, 0,0,width,height);
   PImage test = get();
-  //currImg.mask(test);
+  currImg.mask(test);
   pushMatrix();
   translate(width/2, height/2);
   scale(1);
@@ -93,6 +97,17 @@ vSize = 20*sin((frameCount/100.0)*omega) + 75;
 setupTriangles();
 }
 
+public void setupVertices(ArrayList<Triangle> ts) {
+  hashMap.clear();
+  Triangle t;
+   for(int i = 0; i<ts.size(); i++) {
+     t = ts.get(i);
+     for(int j = 0; j<t.vertices.length;j++) {
+       hashMap.put( t.vertices[j].toString(), 1);
+     }
+   }
+  //println(hashMap.size());
+}
 
 public void setupTriangles() {
   Vec2D[] cvecs = new Vec2D[3];
@@ -120,6 +135,7 @@ public void setupTriangles() {
   if (recursionLevel>5) {
     triangles = subdivide(triangles);
   }
+  setupVertices(triangles);
 }
 
 public void keyPressed() {
