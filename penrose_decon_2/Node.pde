@@ -17,11 +17,16 @@ class Node {
 
   public void draw() {
     if (drawImg) {
-      image((PImage) imgMap.get(oPos), pos.x-(vSize/2), pos.y-(vSize/2));
+      tint(255, 200*(pow(weight, 1.3)));
+      //println(weight);
+      PImage toDraw = (PImage) imgMap.get(oPos);
+      if(toDraw != null) {
+      image(toDraw, pos.x, pos.y);
+      }
     }
     else {
       noStroke();
-      fill(255, 200*(pow(weight/10, 1.3)));
+      fill(255, 200*(pow(weight, 1.3)));
       ellipse(pos.x, pos.y, vSize, vSize);
     }
   }

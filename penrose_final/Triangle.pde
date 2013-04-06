@@ -32,22 +32,6 @@ class Triangle {
   }
  } 
  
- public Triangle getRotated(float r) {
-   Vec2D v0, v1, v2;
-   v0 = vertices[0].getRotated(r);
-   v1 = vertices[1].getRotated(r);
-   v2 = vertices[2].getRotated(r);
-   return new Triangle(v0, v1, v2, type);
- }
- 
-  public Triangle add(Vec2D a) {
-   Vec2D v0, v1, v2;
-   v0 = vertices[0].add(a);
-   v1 = vertices[1].add(a);
-   v2 = vertices[2].add(a);
-   return new Triangle(v0, v1, v2, type);
- }
- 
  public void draw() {
    if(drawTiling) {
    if(type == 0){fill(255,0,0, 50);}

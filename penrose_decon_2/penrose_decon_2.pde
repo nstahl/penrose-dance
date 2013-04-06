@@ -35,7 +35,7 @@ boolean drawTiling = false;
 boolean drawVertices =true;
 boolean drawImg = false;
 
-HashMap<Vec2D[], Integer> hashMap;
+HashMap<Vec2D, Integer> hashMap;
 HashMap<Vec2D, PImage> imgMap;
 Vec2D[] equiVecs; 
 
@@ -64,44 +64,26 @@ void setup() {
 
 void draw() {
   background(0);
-  //update();
+  update();
 
   pushMatrix();
   translate(width/2, height/2);
-  scale(.275);
+  scale(.325);
 
   for (int i=0; i<nodes.length;i++) {
     nodes[i].draw();
   }
-
-  for (int j = 0; j<0; j++) {
-    pushMatrix();
-    scale(1, pow(-1, (j % 2)));
-    rotate(radians(36*(j+j%2)));
-    for (int i=0; i<triangles.size(); i++) {
-      triangles.get(i).draw();
-    }
-    popMatrix();
-  }
   popMatrix();
 
-
-  currImg.copy(oImg, 0, 0, oImg.width, oImg.height, 0, 0, width, height);
-  PImage test = get();
-  currImg.mask(test);
-  pushMatrix();
-  translate(width/2, height/2);
-  scale(1);
-  image(currImg, -currImg.width/2, -currImg.height/2);
-  popMatrix();
 }
 
 public void update() {
 
-  param_t = (float)Math.pow(amplitude*cos((frameCount/100.0)*omega), 3) + GOLDEN_RATIO;
-
+  param_t = (float)Math.pow(amplitude*cos((frameCount/500.0)*omega), 3) + GOLDEN_RATIO;
+  
   vSize = 20*sin((frameCount/100.0)*omega) + 75;
   setupTriangles();
+  setupVertices(triangles);
 }
 
 public static void printMap(Map mp) {
@@ -113,111 +95,6 @@ public static void printMap(Map mp) {
   }
 }
 
-public void setupEquiVectors(ArrayList<Triangle> ts) {
-  equiVecs = new Vec2D[ ts.size()*3 ];
-  Triangle t;
-  for (int i = 0; i<ts.size(); i++) {
-    t = ts.get(i);
-    for (int j = 0; j<t.vertices.length;j++) {
-      equiVecs[j + i*t.vertices.length] = t.vertices[j];
-    }
-  }
-}
-
-public void setupVertices(ArrayList<Triangle> ts) {
-  hashMap.clear();
-  Triangle t;
-  Vec2D[] vPair;
-  int counter = 0;
-  for (int i = 0; i<ts.size(); i++) {
-    t = ts.get(i);
-    for (int j = 0; j<t.vertices.length;j++) {
-      Vec2D k = t.vertices[j];
-      vPair = new Vec2D[2];
-      vPair[0] = k;
-      vPair[1] = equiVecs[counter];
-      if (hashMap.containsKey( vPair )) {
-        hashMap.put( vPair, hashMap.get(k) + 1) ;
-      }
-      else {
-        hashMap.put( vPair, 1 );
-      }
-      counter++;
-    }
-  }
-  nodes = new Node[hashMap.size()];
-  //make nodes from the hashmap
-  counter = 0;
-  Vec2D[] idVecs;
-  Iterator it = hashMap.entrySet().iterator();
-  while (it.hasNext ()) {
-    Map.Entry pairs = (Map.Entry)it.next();
-    idVecs = (Vec2D[])pairs.getKey();
-    nodes[counter] = new Node(idVecs[0], idVecs[1], (Integer)pairs.getValue());
-    it.remove(); // avoids a ConcurrentModificationException
-    counter++;
-  }
-  
-  //sort nodes
-  Node temp;
-  for (int i=0; i<nodes.length-1; i++) {
-
-    int minId = i;
-    //find min
-    for (int j=i+1; j<nodes.length; j++) {
-      if (nodes[j].oPos.x<nodes[minId].oPos.x) {
-        minId = j;
-      }
-      //exchange
-      temp = nodes[i];
-      nodes[i] = nodes[minId];
-      nodes[minId] = temp;
-    }
-  }
-  
-}
-
-
-public void makeImages() {
-  PImage nodeImg;
-  Vec2D pos;
-  int halfSize = (int)(vSize/2);
-  int dim = (int)vSize;
-  for (int i=0; i<nodes.length; i++) {
-    pos = nodes[i].oPos;
-    nodeImg = createImage((int)vSize, (int)vSize, ARGB);
-    nodeImg.copy(oImg, (int)nodes[i].pos.x-halfSize, (int)nodes[i].pos.y-halfSize, dim, dim, 0, 0, dim, dim);
-    imgMap.put( pos, nodeImg );
-  }
-}
-
-public void setupTriangles() {
-  Vec2D[] cvecs = new Vec2D[3];
-  cvecs[0] = new Vec2D();
-  cvecs[2] = new Vec2D(width, 0);
-  cvecs[1] = cvecs[2].getRotated(radians(36));
-
-  triangles.clear();
-  Triangle seedTriangle = new Triangle(cvecs, 0);
-  triangles.add(seedTriangle);
-
-  triangles = subdivide(triangles);
-  if (recursionLevel>1) {
-    triangles = subdivide(triangles);
-  }
-  if (recursionLevel>2) {
-    triangles = subdivide(triangles);
-  }
-  if (recursionLevel>3) {
-    triangles = subdivide(triangles);
-  }
-  if (recursionLevel>4) {
-    triangles = subdivide(triangles);
-  }
-  if (recursionLevel>5) {
-    triangles = subdivide(triangles);
-  }
-}
 
 public void keyPressed() {
   if (key == 'i')
@@ -330,4 +207,137 @@ PImage getFrame() {
 
   return img;
 }
+
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+public void setupTriangles() {
+  Vec2D[] cvecs = new Vec2D[3];
+  cvecs[0] = new Vec2D();
+  cvecs[2] = new Vec2D(width, 0);
+  cvecs[1] = cvecs[2].getRotated(radians(36));
+
+  triangles.clear();
+  
+  Triangle seedTriangle = new Triangle(cvecs, 0); 
+  for(int i=0;i<10;i++) {
+    triangles.add(seedTriangle.getRotated(radians(i*36)).add(new Vec2D(width/2, height/2)));
+  }
+  
+  
+
+  triangles = subdivide(triangles);
+  if (recursionLevel>1) {
+    triangles = subdivide(triangles);
+  }
+  if (recursionLevel>2) {
+    triangles = subdivide(triangles);
+  }
+  if (recursionLevel>3) {
+    triangles = subdivide(triangles);
+  }
+  if (recursionLevel>4) {
+    triangles = subdivide(triangles);
+  }
+  if (recursionLevel>5) {
+    triangles = subdivide(triangles);
+  }
+}
+
+public void setupEquiVectors(ArrayList<Triangle> ts) {
+  equiVecs = new Vec2D[ ts.size()*3 ];
+  Triangle t;
+  for (int i = 0; i<ts.size(); i++) {
+    t = ts.get(i);
+    for (int j = 0; j<t.vertices.length;j++) {
+      equiVecs[j + i*t.vertices.length] = t.vertices[j].add(new Vec2D(random(), random()));
+    }
+  }
+}
+
+public void setupVertices(ArrayList<Triangle> ts) {
+  //calc weights
+  hashMap.clear();
+  Triangle t;
+  for (int i = 0; i<ts.size(); i++) {
+    t = ts.get(i);
+    for (int j = 0; j<t.vertices.length;j++) {
+      Vec2D k = t.vertices[j];
+      if (hashMap.containsKey( k )) {
+        hashMap.put( k, hashMap.get(k) + 1) ;
+      }
+      else {
+        hashMap.put( k, 1 );
+      }
+    }
+  }
+  
+  nodes = new Node[hashMap.size()];
+  int counter = 0;
+  int nodesAdded = 0;
+  for (int i = 0; i<ts.size(); i++) {
+    t = ts.get(i);
+    for (int j = 0; j<t.vertices.length;j++) {
+      //wowo this did not workVec2D k = t.vertices[j];
+      Vec2D newVec = t.vertices[j];
+      //println(hashMap.containsKey(newVec ));
+
+      if (hashMap.get(newVec)>0) {
+        //make node
+        nodes[nodesAdded ] = new Node(newVec, equiVecs[counter], hashMap.get(newVec)/10.0);
+        hashMap.put( newVec, 0) ;
+        nodesAdded++;
+      }
+      counter++;
+    }
+  }
+  
+  //sort nodes
+  Node temp;
+  for (int i=0; i<nodes.length-1; i++) {
+
+    int minId = i;
+    //find min
+    for (int j=i+1; j<nodes.length; j++) {
+      if (nodes[j].oPos.x<nodes[minId].oPos.x) {
+        minId = j;
+      }
+      //exchange
+      temp = nodes[i];
+      nodes[i] = nodes[minId];
+      nodes[minId] = temp;
+    }
+  }
+  for (int i=0; i<nodes.length-1; i++) {
+
+    int minId = i;
+    //find min
+    for (int j=i+1; j<nodes.length; j++) {
+      if (nodes[j].oPos.y<nodes[minId].oPos.y) {
+        minId = j;
+      }
+      //exchange
+      temp = nodes[i];
+      nodes[i] = nodes[minId];
+      nodes[minId] = temp;
+    }
+  }
+  
+}
+
+public void makeImages() {
+  PImage nodeImg;
+  Vec2D pos;
+  int halfSize = (int)(vSize/2);
+  int dim = (int)vSize;
+  for (int i=0; i<nodes.length; i++) {
+    pos = nodes[i].oPos;
+    nodeImg = createImage((int)vSize, (int)vSize, ARGB);
+    nodeImg.copy(oImg, (int)nodes[i].pos.x-halfSize, (int)nodes[i].pos.y-halfSize, dim, dim, 0, 0, dim, dim);
+    imgMap.put( pos, nodeImg );
+  }
+}
+
+
+
 
