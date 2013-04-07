@@ -30,7 +30,7 @@ int recursionLevel = 6;
 PImage currImg, oImg;
 
 //booleans
-boolean showGUI = true;
+boolean showGUI = false;
 boolean drawTiling = false;
 boolean drawVertices =true;
 
